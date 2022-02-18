@@ -21,8 +21,11 @@ app.use(json())
  * Import Routes
  *  add routes to app
  */
-import routes from './router/routes'
-app.use('/api', routes)
+// import routes from './router/routes'
+// app.use('/api', routes)
+app.get("/", (req , res) => {
+    res.send({ message: "welcome to post "})
+})
 
 /** Server Listening */ 
 const PORT = process.env.PORT || 3000
