@@ -16,14 +16,16 @@ create table users(
 -- creating a products table for all product in the store
 create table products (
 	id int not null primary key unique auto_increment,
-    barcode int not null unique,
+    barcode varchar(50) not null unique,
     name varchar(150) not null,
     type varchar(100) not null,
-    unit_price float(9,2) not null,
+    unit_price decimal(9,2) not null,
     quantity int default(0),
     created_at timestamp default now(),
     updated_at timestamp default now() on update now()
 );
+-- create an unique index for products.barcode
+create index product_barcode on products (barcode);
 
 -- sales recording
 create table sales (
