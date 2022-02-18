@@ -2,7 +2,7 @@
   "name": "pos-api",
   "version": "0.0.1",
   "description": "p.o.s api back-end",
-  "main": "src/index.js",
+  "main": "app.js",
   "scripts": {
     "serve": "nodemon --exec babel-node src/index.js"
   },
