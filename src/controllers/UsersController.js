@@ -16,21 +16,25 @@ class UsersController {
 
     users(request, response) {
         const statement = "SELECT id, name, email, email_verified, active, is_admin, created_at, updated_at FROM users"
-        connection.query(statement, (error, results) => {
-            if (error) return response.status(500).send({ messege: "Internal Sever Error"})
-            const data = results.map(obj => ({
-                ...obj,
-                created_at: dayjs(obj.created_at).format('DD/MMM/YYYY'),
-                updated_at: dayjs(obj.updated_at).format('DD/MMM/YYYY')
-            }))
-            response.send(data)
+        connection.query(statement, async(error, results) => {
+            try {
+                if (error) throw "Internal server error"
+                const data = await results.map(user => ({
+                    ...user,
+                    created_at: dayjs(user.created_at).format('DD/MMM/YYYY'),
+                    updated_at: dayjs(user.updated_at).format('DD/MMM/YYYY')
+                }))
+                response.send(data)
+            } catch (error) {
+                response.status(500).send({ message: error.message })
+            }
         })
     }
 
     update(request, response) {
         const schema = Joi.object({
-            active: Joi.boolean(),
-            is_admin: Joi.boolean()
+            active: Joi.boolean().required(),
+            is_admin: Joi.boolean().required()
         })
         const { error } = schema.validate(request.body)
         if (error) return response.status(422).send({ message: error.details[0].message })
@@ -40,9 +44,9 @@ class UsersController {
             request.params.id
         ]
         const statement = "UPDATE users SET active=?, is_admin=? WHERE id=?"
-        connection.query(statement, data, (error, results)=> {
+        connection.query(statement, data, error => {
             if (error) return response.status(500).send({ message: "Internal Server Error" })
-            response.send(results)
+            response.send({ message: "users successfuly updated" })
         })
     }
     
