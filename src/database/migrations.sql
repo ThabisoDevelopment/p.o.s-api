@@ -20,7 +20,7 @@ create table products (
     name varchar(150) not null,
     type varchar(100) not null,
     unit_price decimal(9,2) not null,
-    quantity int default(0),
+    quantity int not null default(0),
     created_at timestamp default now(),
     updated_at timestamp default now() on update now()
 );
@@ -31,13 +31,10 @@ create index product_barcode on products (barcode);
 create table sales (
 	id int not null primary key unique auto_increment,
     user_id int not null,
-    quantity int not null,
     total_price float(9,2) not null,
     is_cash tinyint default(1) not null,
     cash float(9,2),
     cash_change float(9,2),
-    has_return tinyint default(0) not null,
-    has_promotion tinyint default(0) not null,
 	created_at timestamp default now(),
     updated_at timestamp default now() on update now(),
     -- user id foreign on users table id
@@ -81,4 +78,23 @@ create table stocking_lists (
     -- storkings and products of foreign references
     foreign key (stocking_id) references stockings(id),
     foreign key (product_id) references products(id)
-); 
+);
+
+
+-- creating a coupons table for discount in the store
+create table coupons (
+	id int not null primary key unique auto_increment,
+    user_id int not null,
+    code varchar(50) not null unique,
+    description text,
+    price decimal(9,2) not null,
+    use_qty int not null default(0),
+    active tinyint not null default(0),
+    for_cash tinyint not null default(0),
+    for_credit_card tinyint not null default(1),
+    exp_at timestamp default now(),
+    created_at timestamp default now(),
+    updated_at timestamp default now() on update now(),
+    -- reference user who created coupon
+    foreign key (user_id) references users(id)
+);
