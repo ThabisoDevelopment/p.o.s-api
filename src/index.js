@@ -22,7 +22,9 @@ app.use(json())
  * add routes to app
  */
 import routes from './router/routes'
+import adminRoutes from './router/adminRoutes'
 app.use('/api', routes)
+app.use('/api/admin', adminRoutes)
 
 /** Server Listening */ 
 const PORT = process.env.PORT || 3000
