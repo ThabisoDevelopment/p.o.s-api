@@ -15,7 +15,12 @@ class UsersController {
     }
 
     users(request, response) {
-        const statement = "SELECT id, name, email, email_verified, active, is_admin, created_at, updated_at FROM users"
+        let concat_statement = ''
+        if (request.query.by == 'admin') concat_statement = "WHERE is_admin=1"
+        if (request.query.by == 'cashier') concat_statement = "WHERE is_admin=0"
+        if (request.query.by == 'active') concat_statement = "WHERE active=1"
+        if (request.query.by == 'deactive') concat_statement = "WHERE active=0"
+        const statement = "SELECT id, name, email, email_verified, active, is_admin, created_at, updated_at FROM users " + concat_statement
         connection.query(statement, async(error, results) => {
             try {
                 if (error) throw "Internal server error"
