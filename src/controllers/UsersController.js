@@ -14,13 +14,19 @@ class UsersController {
         })
     }
 
+    byId(request, response) {
+        const statement = "SELECT id, name, email, email_verified, active, is_admin, created_at, updated_at FROM users WHERE id = ?"
+        connection.query(statement, [request.params.id], (error, results) => {
+            if (error) return response.status(500).send({ messege: "Internal Sever Error"})
+            results[0].created_at = dayjs(results[0].created_at).format('DD/MMM/YYYY')
+            results[0].updated_at = dayjs(results[0].updated_at).format('DD/MMM/YYYY')
+            response.send(results[0])
+        })
+    }
+
     users(request, response) {
-        let concat_statement = ''
-        if (request.query.by == 'admin') concat_statement = "WHERE is_admin=1"
-        if (request.query.by == 'cashier') concat_statement = "WHERE is_admin=0"
-        if (request.query.by == 'active') concat_statement = "WHERE active=1"
-        if (request.query.by == 'deactive') concat_statement = "WHERE active=0"
-        const statement = "SELECT id, name, email, email_verified, active, is_admin, created_at, updated_at FROM users " + concat_statement
+        let statement = "SELECT id, name, email, email_verified, active, is_admin, created_at, updated_at FROM users"
+        if (request.query.search) statement += ` WHERE name LIKE '%${request.query.search}%'`
         connection.query(statement, async(error, results) => {
             try {
                 if (error) throw "Internal server error"
@@ -31,7 +37,7 @@ class UsersController {
                 }))
                 response.send(data)
             } catch (error) {
-                response.status(500).send({ message: error.message })
+                response.status(500).send(error)
             }
         })
     }
