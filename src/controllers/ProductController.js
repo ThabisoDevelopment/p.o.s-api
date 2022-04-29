@@ -1,23 +1,36 @@
 import dayjs from "dayjs"
-import Joi from "joi"
+import Joi, { number } from "joi"
 import connection from "../database/connection"
 
 class ProductController {
 
     products(request, response) {
-        const statement = "SELECT * FROM products"
+        let statement = "SELECT * FROM products"
+        if (request.query.search) statement += ` WHERE name LIKE '%${request.query.search}%'`
         connection.query(statement, async(error, results) => {
             try {
                 if (error) throw "Internal server error"
                 const data = await results.map(product => ({
                     ...product,
-                    created_at: dayjs(product.created_at).format('DD/MMM/YYYY'),
-                    updated_at: dayjs(product.updated_at).format('DD/MMM/YYYY')
+                    created_at: dayjs(product.created_at).format('DD/MMM/YYYY HH:MM'),
+                    updated_at: dayjs(product.updated_at).format('DD/MMM/YYYY HH:MM')
                 }))
+                if(request.query.search && data.length < 1) throw `Sorry! search for ${request.query.search} not found`
                 response.send(data)
             } catch (error) {
-                response.status(500).send({ message: error.message })
+                response.status(500).send(error)
             }
+        })
+    }
+
+    byId(request, response) {
+        const statement = "SELECT * FROM products WHERE id=?"
+        connection.query(statement, [request.params.id], (error, results) => {
+            if (error) return response.status(500).send("Internal server error")
+            const data = results[0]
+            data.created_at = dayjs(data.created_at).format('DD/MMM/YYYY HH:MM')
+            data.updated_at = dayjs(data.updated_at).format('DD/MMM/YYYY HH:MM')
+            response.send(data)
         })
     }
 
@@ -29,7 +42,7 @@ class ProductController {
             unit_price: Joi.number().required()
         })
         const { error } = schema.validate(request.body)
-        if (error) return response.status(422).send({ message: error.details[0].message })
+        if (error) return response.status(422).send(error.details[0].message)
         const data = [
             request.body.barcode,
             request.body.name,
@@ -38,10 +51,10 @@ class ProductController {
         ]
         const statement = "INSERT INTO products(barcode, name, type, unit_price) VALUES(?, ?, ?, ?)"
         connection.query(statement, data, (error, results)=> {
-            if (error) return response.status(500).send({ message: "Internal server error" })
+            if (error) return response.status(500).send("Internal server error")
             response.status(201).send({ 
                 message: "New product have been created successful",
-                product_id: results.insertId
+                id: results.insertId
             })
         })
     }
@@ -53,7 +66,7 @@ class ProductController {
             unit_price: Joi.number().required()
         })
         const { error } = schema.validate(request.body)
-        if (error) return response.status(422).send({ message: error.details[0].message })
+        if (error) return response.status(422).send(error.details[0].message)
         const data = [
             request.body.name,
             request.body.type,
@@ -62,7 +75,7 @@ class ProductController {
         ]
         const statement = "UPDATE products SET name=?, type=?, unit_price=? WHERE id=?"
         connection.query(statement, data, error => {
-            if (error) return response.status(500).send({ message: "Internal server error" })
+            if (error) return response.status(500).send("Internal server error")
             response.send({ message: "product have been updated successful" })
         })
     }

@@ -15,7 +15,7 @@ router.get('/sales/list/:sale_id', Token.verify, SalesController.get_by_id)
 
 // products routes
 router.get('/products', Token.verify, ProductController.products)
-router.get('/products/search', Token.verify, ProductController.search)
+router.get('/products/:id', Token.verify, ProductController.byId)
 router.post('/products', Token.verify, ProductController.create)
 router.put('/products/:id', Token.verify, ProductController.update)
 
